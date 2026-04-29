@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/developer/Desktop/SemPeakCase/sempeak-case-monorepo/apps/web-nextjs/app/layout\":[\"static/media/4cf2300e9c8272f7-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"

@@ -1,0 +1,16 @@
+model Conversation {
+  id            String             @id @default(cuid())
+  channel       Channel
+  participantId String
+  status        ConversationStatus @default(OPEN)
+  unreadCount   Int                @default(0)
+  lastMessageAt DateTime?
+  lastReadAt    DateTime?
+  archivedAt    DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  messages      Message[]
+
+  @@unique([channel, participantId])
+  @@index([channel, status])
+}

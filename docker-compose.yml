@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # 1. Veritabanı
+  postgres:
+    image: postgres:15-alpine
+    container_name: prod_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-123123}
+      POSTGRES_DB: SeampeakCase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - sempeak_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d SeampeakCase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: prod_rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-test_rabbitmq_pass_xyz}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sempeak_net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. Mock Provider
+  mock:
+    image: bigrupai/sempeak-mock:latest
+    container_name: prod_mock
+    restart: always
+    ports:
+      - "4000:4000"
+    networks:
+      - sempeak_net
+
+  # 4. Backend (API)
+  backend:
+    image: bigrupai/sempeak-backend:latest
+    container_name: prod_backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mock:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-123123}@postgres:5432/SeampeakCase
+      - RABBITMQ_URL=amqp://admin:${RABBITMQ_PASSWORD:-test_rabbitmq_pass_xyz}@rabbitmq:5672
+      - MOCK_PROVIDER_BASE_URL=http://mock:4000
+      - WEBHOOK_INGEST_MODE=async
+    networks:
+      - sempeak_net
+
+  # 5. Frontend (Next.js)
+  web:
+    image: bigrupai/sempeak-web-nextjs:latest
+    container_name: prod_web
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "5180:5180"
+    environment:
+      - PORT=5180
+      - NEXT_PUBLIC_API_URL=/api
+    networks:
+      - sempeak_net
+
+  # 6. Nginx Proxy Manager
+  nginx_proxy_manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: prod_npm
+    restart: always
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    networks:
+      - sempeak_net
+
+networks:
+  sempeak_net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  rabbitmq_data:
+  npm_data:
+  npm_letsencrypt:

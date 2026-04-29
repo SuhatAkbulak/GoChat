@@ -1,0 +1,37 @@
+{
+  "name": "sempeak-case-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "bootstrap": "npm install --workspaces --include-workspace-root",
+    "dev": "npm run dev:all",
+    "dev:all": "npx concurrently -c \"blue,green,magenta\" -n \"backend,web-next,mock\" \"npm run dev:backend\" \"npm run dev:web-next\" \"npm run dev:mock\"",
+    "dev:backend": "npm run start:dev -w @sempeak/backend",
+    "dev:web": "npm run dev -w @sempeak/web",
+    "dev:web-next": "npm run dev -w @sempeak/web-nextjs",
+    "dev:web-next:clean": "npm run dev:clean -w @sempeak/web-nextjs",
+    "dev:mock": "npm run start:dev -w mock-meta-provider",
+    "build": "npm run build -w @sempeak/backend && npm run build -w @sempeak/web && npm run build -w @sempeak/web-nextjs",
+    "build:web-next": "npm run build -w @sempeak/web-nextjs",
+    "test": "npm run test -w @sempeak/backend",
+    "up": "docker compose up --build",
+    "down": "docker compose down -v",
+    "docker:build:backend": "docker build -t bigrupai/sempeak-backend:latest -f apps/backend/Dockerfile .",
+    "docker:build:web-nextjs": "docker build -t bigrupai/sempeak-web-nextjs:latest -f apps/web-nextjs/Dockerfile .",
+    "docker:build:mock": "docker build -t bigrupai/sempeak-mock:latest -f apps/mock-meta-provider/Dockerfile .",
+    "docker:build:all": "npm run docker:build:backend && npm run docker:build:web-nextjs && npm run docker:build:mock",
+    "docker:push:backend": "docker push bigrupai/sempeak-backend:latest",
+    "docker:push:web-nextjs": "docker push bigrupai/sempeak-web-nextjs:latest",
+    "docker:push:mock": "docker push bigrupai/sempeak-mock:latest",
+    "docker:push:all": "npm run docker:push:backend && npm run docker:push:web-nextjs && npm run docker:push:mock"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "overrides": {
+    "send": "0.19.1"
+  }
+}

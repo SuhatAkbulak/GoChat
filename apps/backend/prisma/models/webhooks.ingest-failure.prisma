@@ -1,0 +1,13 @@
+model WebhookIngestFailure {
+  id           String   @id @default(cuid())
+  provider     String
+  eventId      String
+  payload      Json
+  errorCode    String?
+  errorMessage String
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([provider, eventId])
+  @@index([createdAt])
+}

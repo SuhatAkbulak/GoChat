@@ -1,0 +1,28 @@
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+}
+
+enum Channel {
+  WHATSAPP
+  INSTAGRAM
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  RECEIVED
+  FAILED
+  PERM_FAILED
+}
